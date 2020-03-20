@@ -26,9 +26,10 @@ def training_and_validation_df():
         "Embarked": "embarked_from_port"
     }
     df = df.rename(columns=COLUMNS_MAP)
-
+    # overwriting vals:
     df["ticket_class"] = df["ticket_class"].transform(parse_class)
     df["embarked_from_port"] = df["embarked_from_port"].transform(parse_port)
+    # engineering new cols:
     df["marital_status"] = df["full_name"].transform(parse_marital_status)
     df["salutation"] = df["full_name"].transform(parse_salutation)
 
@@ -38,63 +39,60 @@ def training_and_validation_df():
     print(df.head())
     return df
 
-def parse_class(original_val):
+def parse_class(class_num):
     TICKET_CLASS_MAP = {1:"UPPER", 2:"MIDDLE", 3:"LOWER"}
     try:
-        new_val = TICKET_CLASS_MAP[original_val]
+        class_name = TICKET_CLASS_MAP[class_num]
     except KeyError as err:
-        print("CLASS PARSER ERR", err, "ORIGINAL VAL:", type(original_val), original_val)
-        new_val = None
-    return new_val
+        print("CLASS PARSER ERR", err, "ORIGINAL VAL:", type(class_num), class_num)
+        class_name = None
+    return class_name
 
-def parse_port(original_val):
+def parse_port(port_abbrev):
     PORTS_MAP = {"C":"Cherbourg".upper(), "Q":"Queenstown".upper(), "S":"Southampton".upper()}
     try:
-        new_val = PORTS_MAP[original_val]
+        port_name = PORTS_MAP[port_abbrev]
     except KeyError as err:
-        print("PORT PARSER ERR", err, "ORIGINAL VAL:", type(original_val), original_val)
-        new_val = None
-    return new_val
+        print("PORT PARSER ERR", err, "ORIGINAL VAL:", type(port_abbrev), port_abbrev)
+        port_name = None
+    return port_name
 
-def parse_marital_status(original_val):
-    return ("Mr." in original_val or "Mrs." in original_val)
+def parse_marital_status(full_name):
+    return ("Mr." in full_name or "Mrs." in full_name)
 
 def parse_salutation(full_name):
     if "Mr." in full_name:
-        new_val = "MISTER"
+        sal = "MISTER"
     elif "Mrs." in full_name:
-        new_val = "MRS"
+        sal = "MRS"
     elif "Master." in full_name:
-        new_val = "MASTER"
+        sal = "MASTER"
     elif "Miss." in full_name:
-        new_val = "MISS"
+        sal = "MISS"
     elif "Dr." in full_name:
-        new_val = "DOCTOR"
+        sal = "DOCTOR"
     elif "Rev." in full_name:
-        new_val = "REVERAND"
+        sal = "REVERAND"
     elif ("Col." in full_name or "Major." in full_name or "Capt." in full_name):
-        new_val = "MILITARY"
-    elif ("Mme." in full_name):
-        new_val = "MADAME"
-    elif ("Mlle." in full_name):
-        new_val = "MADEMOISELLE"
-    elif ("Sir." in full_name):
-        new_val = "SIR"
-    elif ("Lady." in full_name):
-        new_val = "LADY"
-    elif ("Countess." in full_name):
-        new_val = "COUNTESS"
-    elif ("Ms." in full_name):
-        new_val = "MS"
-    elif ("Don." in full_name):
-        new_val = "DON"
+        sal = "MILITARY"
+    elif "Mme." in full_name:
+        sal = "MADAME"
+    elif "Mlle." in full_name:
+        sal = "MADEMOISELLE"
+    elif "Sir." in full_name:
+        sal = "SIR"
+    elif "Lady." in full_name:
+        sal = "LADY"
+    elif "Countess." in full_name:
+        sal = "COUNTESS"
+    elif "Ms." in full_name:
+        sal = "MS"
+    elif "Don." in full_name:
+        sal = "DON"
     else:
         print("SALUTATION PARSER ERROR", full_name, type(full_name))
-        new_val = None
-    return new_val
-
-
-
+        sal = None
+    return sal
 
 def training_and_validation_splits():
     train, val = train_test_split(training_and_validation_df(), random_state=89,
