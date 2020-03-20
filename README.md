@@ -18,5 +18,6 @@ pip install -r requirements.txt
 ## Usage
 
 ```sh
-python app/preprocessor.py
+python -m app.importer
+python -m app.profiler
 ```
