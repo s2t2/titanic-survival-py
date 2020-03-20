@@ -2,7 +2,7 @@
 import os
 import pandas
 from pandas_profiling import ProfileReport
-import webbrowser
+#import webbrowser
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data")
 REPORTS_DIR = os.path.join(os.path.dirname(__file__), "..", "reports")
@@ -20,7 +20,19 @@ if __name__ == "__main__":
     passengers_profile = ProfileReport(passengers_df, title="Passengers DataFrame (Training)", html={"style":{"full_width":True}})
     print(passengers_profile)
     passengers_profile.to_file(output_file=TRAINING_PROFILE_FILEPATH)
-    webbrowser.open(TRAINING_PROFILE_FILEPATH)
+    #webbrowser.open(os.path.abspath(TRAINING_PROFILE_FILEPATH))
+
+    #> Name has a high cardinality: 891 distinct values
+    #> Ticket has a high cardinality: 681 distinct values
+    #> Cabin has a high cardinality: 147 distinct values
+
+    #> Age has 177 (19.9%) missing values
+    #> Cabin has 687 (77.1%) missing values
+
+    #> SibSp has 608 (68.2%) zeros
+    #> Parch has 678 (76.1%) zeros
+    #> Fare has 15 (1.7%) zeros
+
 
     exit()
 
