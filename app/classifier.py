@@ -14,6 +14,7 @@ from sklearn.pipeline import make_pipeline # see: https://scikit-learn.org/stabl
 from sklearn.model_selection import GridSearchCV # see: https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html
 from sklearn.model_selection import RandomizedSearchCV # see: https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.RandomizedSearchCV.html
 from scipy.stats import randint, uniform
+from sklearn.metrics import classification_report
 
 from graphviz import Source # see: https://pypi.org/project/graphviz/
 from sklearn.tree import export_graphviz # see: https://scikit-learn.org/stable/modules/generated/sklearn.tree.export_graphviz.html
@@ -91,6 +92,11 @@ if __name__ == "__main__":
     #
     # INSPECTION...
     #
+
+    print("-----------------")
+    print("CLASSIFICATION REPORT:")
+    report = classification_report(yval, search.predict(xval))
+    print(report)
 
     print("-----------------")
     print("GRAPHING DECISION TREE:")
