@@ -2,7 +2,9 @@
 import os
 import pandas
 from pprint import pprint
-#from sklearn.model_selection import train_test_split
+
+# see: https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html
+from sklearn.model_selection import train_test_split
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data")
 TRAINING_DATA_FILEPATH = os.path.join(DATA_DIR, "passengers_train.csv")
@@ -14,6 +16,19 @@ class Importer():
         self.testing_df_raw = pandas.read_csv(TESTING_DATA_FILEPATH).copy()
         self.training_df = self.process(self.training_df_raw)
         self.testing_df = self.process(self.testing_df_raw)
+
+    def training_and_validation_splits(self):
+        train, val = train_test_split(self.training_df, random_state=89, train_size=0.80, test_size=0.20,
+            #stratify= self.training_df
+        )
+        #print(type(train), len(train)) #> <class 'pandas.core.frame.DataFrame'> 712
+        #print(type(val), len(val)) #> <class 'pandas.core.frame.DataFrame'> 179
+        target_col = "survived"
+        xtrain = train.drop(columns=[target_col]) # use all other features except the target, inplace is False by default
+        ytrain = train[target_col]
+        xval = val.drop(columns=[target_col]) # use all other features except the target, inplace is False by default
+        yval = val[target_col]
+        return xtrain, ytrain, xval, yval
 
     @classmethod
     def process(cls, passengers_df):
@@ -84,9 +99,9 @@ class Importer():
         elif "Miss." in full_name:
             sal = "MISS"
         elif "Dr." in full_name:
-            sal = "DOCTOR"
+            sal = "DOC/REV"
         elif "Rev." in full_name:
-            sal = "REVERAND"
+            sal = "DOC/REV"
         elif ("Col." in full_name or "Major." in full_name or "Capt." in full_name):
             sal = "MILITARY"
         elif "Mme." in full_name:
@@ -94,34 +109,23 @@ class Importer():
         elif "Mlle." in full_name:
             sal = "MISS" #"MADEMOISELLE"
         elif "Sir." in full_name:
-            sal = "SIR"
+            sal = "NOBILITY" # "SIR"
         elif "Lady." in full_name:
-            sal = "LADY"
+            sal = "NOBILITY" # "LADY"
         elif "Countess." in full_name:
-            sal = "LADY"
+            sal = "NOBILITY" # "LADY"
         elif "Ms." in full_name:
-            sal = "MS"
+            sal = "MRS"
         elif "Don." in full_name:
-            sal = "SIR"
+            sal = "NOBILITY" # "SIR"
         elif "Dona." in full_name:
-            sal = "LADY"
+            sal = "NOBILITY" # "LADY"
         elif "Jonkheer." in full_name:
-            sal = "LADY"
+            sal = "NOBILITY" # "LADY"
         else:
             print("SALUTATION PARSER ERROR", full_name, type(full_name))
             sal = None
         return sal
-
-    #def training_and_validation_splits():
-    #    train, val = train_test_split(training_and_validation_df(), random_state=89,
-    #        train_size=0.80, test_size=0.20, #stratify=train[""]
-    #    )
-    #    breakpoint()
-    #    # xtrain
-    #    # ytrain
-    #    # xval
-    #    # yval
-    #    return xtrain, ytrain, xval, yval
 
 if __name__ == "__main__":
 

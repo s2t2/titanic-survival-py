@@ -1,3 +1,4 @@
 pandas
 pandas-profiling
 scikit-learn
+category_encoders

@@ -10,7 +10,7 @@ from app.importer import Importer
 
 REPORTS_DIR = os.path.join(os.path.dirname(__file__), "..", "reports")
 
-TO_HTML = (os.getenv("TO_HTML", "False").title() == "True")
+TO_HTML = (os.getenv("TO_HTML", "True").title() == "True")
 
 if __name__ == "__main__":
 
