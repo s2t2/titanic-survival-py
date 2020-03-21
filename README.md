@@ -36,7 +36,7 @@ python -m app.classifier
 
 ## Results
 
-Current Validation Accuracy: 86.5%
+Current Validation Accuracy: 87.1%
 
 Decision Tree Logic:
 

@@ -1,0 +1,1 @@
+{"best_score": 0.7977346597064907, "best_params": {"decisiontreeclassifier__max_depth": 10, "decisiontreeclassifier__min_samples_leaf": 0.02, "simpleimputer__strategy": "mean"}}

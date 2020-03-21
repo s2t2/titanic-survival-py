@@ -1,15 +1,18 @@
-# adapted from: https://github.com/LambdaSchool/DS-Unit-2-Kaggle-Challenge/blob/master/module1-decision-trees/LS_DS_221.ipynb
+# adapted from: https://github.com/LambdaSchool/DS-Unit-2-Kaggle-Challenge
 
 import os
+import json
+from pprint import pprint
 
 from category_encoders import OneHotEncoder # see: https://contrib.scikit-learn.org/categorical-encoding/onehot.html
 from category_encoders import OrdinalEncoder # see: https://contrib.scikit-learn.org/categorical-encoding/ordinal.html
 from sklearn.impute import SimpleImputer # see: https://scikit-learn.org/stable/modules/generated/sklearn.impute.SimpleImputer.html
 from sklearn.preprocessing import StandardScaler # see: https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import DecisionTreeClassifier # see: https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html
 #from sklearn.ensemble import RandomForestClassifier
-from sklearn.pipeline import make_pipeline
-from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
+from sklearn.pipeline import make_pipeline # see: https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.make_pipeline.html
+from sklearn.model_selection import GridSearchCV # see: https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html
+#from sklearn.model_selection import RandomizedSearchCV
 
 from graphviz import Source # see: https://pypi.org/project/graphviz/
 from sklearn.tree import export_graphviz # see: https://scikit-learn.org/stable/modules/generated/sklearn.tree.export_graphviz.html
@@ -18,19 +21,12 @@ from app import REPORTS_DIR
 from app.importer import Importer
 
 TREE_VIEW_FILEPATH = os.path.join(REPORTS_DIR, "decision_tree.png")
+SEARCH_RESULTS_FILEPATH = os.path.join(REPORTS_DIR, "search_results.json")
 
 if __name__ == "__main__":
 
     importer = Importer()
     xtrain, ytrain, xval, yval = importer.training_and_validation_splits()
-
-    #one_hot_encoder = OneHotEncoder(use_cat_names=True, cols=["gender",
-    #    #"embarked_from_port", "salutation"
-    #])
-    #ordinal_encoder = OrdinalEncoder(cols=["ticket_class"], mapping=[{"col": "ticket_class", "mapping": {"UPPER":3, "MIDDLE":2, "LOWER":1}}])
-    #imputer = SimpleImputer() # strategy="median"
-    ##scaler = StandardScaler()
-    #model = DecisionTreeClassifier(random_state=89, min_samples_leaf=.05) # max_depth=5 OR min_samples_leaf=.05
 
     pipeline = make_pipeline(
         OneHotEncoder(use_cat_names=True, cols=["gender"]),
@@ -38,39 +34,60 @@ if __name__ == "__main__":
         SimpleImputer(),
         DecisionTreeClassifier(random_state=89, min_samples_leaf=.05)
     )
+    search_params = {
+        "simpleimputer__strategy": ["mean", "median"],
+        "decisiontreeclassifier__min_samples_leaf": (0.02, 0.05, 0.1),
+        "decisiontreeclassifier__max_depth": (1, 2, 4, 6, 10),
+    }
+    search = GridSearchCV(
+        pipeline,
+        param_grid=search_params,
+        scoring="accuracy", # "neg_mean_absolute_error",
+        n_jobs=-1, # -1 means using all processors
+        cv=5,
+        verbose=10,
+        return_train_score=True,
+    )
 
     print("-----------------")
     print("TRAINING...")
     print("-----------------")
-    #xtrain_one_hot_encoded = one_hot_encoder.fit_transform(xtrain)
-    #xtrain_ordinal_encoded = ordinal_encoder.fit_transform(xtrain_one_hot_encoded)
-    #xtrain_imputed = imputer.fit_transform(xtrain_ordinal_encoded)
-    #model.fit(xtrain_imputed, ytrain)
-    #print("MODEL CLASSES:", model.classes_)
-    #print("ACCURACY (TRAINING):", model.score(xtrain_imputed, ytrain))
-    pipeline.fit(xtrain, ytrain)
-    print("MODEL CLASSES:", pipeline.classes_)
-    print("ACCURACY (TRAINING):", pipeline.score(xtrain, ytrain))
-
-    #xval_one_hot_encoded = one_hot_encoder.transform(xval)
-    #xval_ordinal_encoded = ordinal_encoder.transform(xval_one_hot_encoded)
-    #xval_imputed = imputer.transform(xval_ordinal_encoded)
-    #print("ACCURACY (VALIDATION):", model.score(xval_imputed, yval))
-    print("ACCURACY (VALIDATION):", pipeline.score(xval, yval))
+    #pipeline.fit(xtrain, ytrain)
+    #print("MODEL CLASSES:", pipeline.classes_)
+    #print("ACCURACY (TRAINING):", pipeline.score(xtrain, ytrain))
+    #print("ACCURACY (VALIDATION):", pipeline.score(xval, yval))
+    search.fit(xtrain, ytrain)
+    print("-----------------")
+    print("MODEL CLASSES:", search.classes_)
+    print("ACCURACY (TRAINING):", search.score(xtrain, ytrain))
+    print("ACCURACY (VALIDATION):", search.score(xval, yval))
+    print("BEST PARAMS:")
+    pprint(search.best_params_)
+    print("BEST SCORE:", search.best_score_)
+    with open(SEARCH_RESULTS_FILEPATH, "w") as f:
+        f.write(json.dumps({
+            "best_score": search.best_score_,
+            "best_params": search.best_params_
+        }))
 
     #
     # INSPECTION...
     #
 
-    #encoded_columns = xval_ordinal_encoded.columns
-    #class_names = [str(class_name) for class_name in model.classes_]
-    model = pipeline.named_steps["decisiontreeclassifier"]
-    one_hot = pipeline.named_steps["onehotencoder"]
-    ordinal = pipeline.named_steps["ordinalencoder"]
+    print("-----------------")
+    print("GRAPHING DECISION TREE:")
+    print(os.path.abspath(TREE_VIEW_FILEPATH))
+    #model = pipeline.named_steps["decisiontreeclassifier"]
+    #one_hot = pipeline.named_steps["onehotencoder"]
+    #ordinal = pipeline.named_steps["ordinalencoder"]
+    model = search.best_estimator_.named_steps["decisiontreeclassifier"]
+    one_hot = search.best_estimator_.named_steps["onehotencoder"]
+    ordinal = search.best_estimator_.named_steps["ordinalencoder"]
     xval_encoded = one_hot.transform(xval)
     xval_encoded = ordinal.transform(xval_encoded)
+
     encoded_columns = xval_encoded.columns
-    class_names = [str(class_name) for class_name in model.classes_]
+    class_names = [str(class_name) for class_name in search.classes_]
     dot_data = export_graphviz(model,
         out_file=None,
         max_depth=3,
