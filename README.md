@@ -1,8 +1,11 @@
-# Titanic Survival Predictions (Python)
+# Titanic Survival (Python)
+
+![](https://media.nationalgeographic.org/assets/photos/000/273/27302.jpg)
 
 A binary classification model, inspired by the ["Titanic" Kaggle Challenge](https://www.kaggle.com/c/titanic).
 
-Predicts whether or not a given passenger will survive, based on characteristics such as age, gender, and how much money their ticket cost.
+Predicts whether or not a given passenger will survive, based on personal characteristics such as age, gender, and how much money their ticket cost.
+
 
 ## [Data Dictionary](DATA.md)
 
