@@ -10,8 +10,12 @@ TRAINING_DATA_FILEPATH = os.path.join(DATA_DIR, "passengers_train.csv")
 #    def __init__(self):
 #        self.
 
+def training_and_validation_df_raw():
+    df = pandas.read_csv(TRAINING_DATA_FILEPATH).copy()
+    return df
+
 def training_and_validation_df():
-    df = pandas.read_csv(TRAINING_DATA_FILEPATH)
+    df = training_and_validation_df_raw().copy()
 
     # renaming cols:
     COLUMNS_MAP = {
