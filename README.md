@@ -11,6 +11,12 @@ Predicts whether or not a given passenger will survive, based on personal charac
 
 ## Setup
 
+Prerequisites:
+
+  + Anaconda and Python 3.7
+  + Graphviz (`brew install graphviz`)
+  + Orca (`conda install -c plotly plotly-orca`)
+
 Setup virtual environment:
 
 ```sh

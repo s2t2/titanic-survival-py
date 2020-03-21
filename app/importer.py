@@ -7,28 +7,37 @@ from pprint import pprint
 from sklearn.model_selection import train_test_split
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data")
-TRAINING_DATA_FILEPATH = os.path.join(DATA_DIR, "passengers_train.csv")
+TRAINING_AND_VALIDATION_DATA_FILEPATH = os.path.join(DATA_DIR, "passengers_trainval.csv")
 TESTING_DATA_FILEPATH = os.path.join(DATA_DIR, "passengers_test.csv")
 
 class Importer():
-    def __init__(self):
-        self.training_df_raw = pandas.read_csv(TRAINING_DATA_FILEPATH).copy()
-        self.testing_df_raw = pandas.read_csv(TESTING_DATA_FILEPATH).copy()
-        self.training_df = self.process(self.training_df_raw)
-        self.testing_df = self.process(self.testing_df_raw)
+    target_col = "survived"
 
-    def training_and_validation_splits(self):
-        train, val = train_test_split(self.training_df, random_state=89, train_size=0.80, test_size=0.20,
-            #stratify= self.training_df
+    def __init__(self):
+        # extracts raw data, allows for pre-transformation profiling:
+        self.trainval_df_raw = pandas.read_csv(TRAINING_AND_VALIDATION_DATA_FILEPATH).copy()
+        self.testing_df_raw = pandas.read_csv(TESTING_DATA_FILEPATH).copy()
+
+        # cleans the data (to some extent, because encoding, imputing, scaling, all done during model training):
+        self.trainval_df = self.process(self.trainval_df_raw)
+        self.testing_df = self.process(self.testing_df_raw)
+        self.training_df, self.validation_df = train_test_split(self.trainval_df, random_state=89,
+            train_size=0.80, test_size=0.20,
+            #stratify= self.training_df["survived"]
         )
-        #print(type(train), len(train)) #> <class 'pandas.core.frame.DataFrame'> 712
-        #print(type(val), len(val)) #> <class 'pandas.core.frame.DataFrame'> 179
-        target_col = "survived"
-        xtrain = train.drop(columns=[target_col]) # use all other features except the target, inplace is False by default
-        ytrain = train[target_col]
-        xval = val.drop(columns=[target_col]) # use all other features except the target, inplace is False by default
-        yval = val[target_col]
-        return xtrain, ytrain, xval, yval
+
+        # splits the data:
+        self.xtrain, self.ytrain = self.split_xy(self.training_df)
+        self.xval, self.yval = self.split_xy(self.validation_df)
+        self.xtest = self.testing_df # because there are no labels in the test set
+        self.ytest = None # because there are no labels in the test set
+
+    @classmethod
+    def split_xy(cls, passengers_df):
+        df = passengers_df.copy()
+        features = df.drop(columns=[cls.target_col]) # use all other features except the target, inplace is False by default
+        labels = df[cls.target_col]
+        return features, labels # x, y
 
     @classmethod
     def process(cls, passengers_df):
