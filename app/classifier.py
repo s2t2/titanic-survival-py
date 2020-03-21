@@ -12,7 +12,8 @@ from sklearn.tree import DecisionTreeClassifier # see: https://scikit-learn.org/
 #from sklearn.ensemble import RandomForestClassifier
 from sklearn.pipeline import make_pipeline # see: https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.make_pipeline.html
 from sklearn.model_selection import GridSearchCV # see: https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html
-#from sklearn.model_selection import RandomizedSearchCV
+from sklearn.model_selection import RandomizedSearchCV # see: https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.RandomizedSearchCV.html
+from scipy.stats import randint, uniform
 
 from graphviz import Source # see: https://pypi.org/project/graphviz/
 from sklearn.tree import export_graphviz # see: https://scikit-learn.org/stable/modules/generated/sklearn.tree.export_graphviz.html
@@ -34,20 +35,33 @@ if __name__ == "__main__":
         SimpleImputer(),
         DecisionTreeClassifier(random_state=89, min_samples_leaf=.05)
     )
-    search_params = {
-        "simpleimputer__strategy": ["mean", "median"],
-        "decisiontreeclassifier__min_samples_leaf": (0.02, 0.05, 0.1),
-        "decisiontreeclassifier__max_depth": (1, 2, 4, 6, 10),
-    }
+
     search = GridSearchCV(
-        pipeline,
-        param_grid=search_params,
+        estimator=pipeline,
+        param_grid={
+            "simpleimputer__strategy": ["mean", "median"],
+            "decisiontreeclassifier__min_samples_leaf": (0.02, 0.2),
+            "decisiontreeclassifier__max_depth": (1, 20),
+        },
         scoring="accuracy", # "neg_mean_absolute_error",
         n_jobs=-1, # -1 means using all processors
         cv=5,
         verbose=10,
         return_train_score=True,
     )
+    #search = RandomizedSearchCV(
+    #    estimator=pipeline,
+    #    param_distributions={
+    #        "simpleimputer__strategy": ["mean", "median"],
+    #        "decisiontreeclassifier__min_samples_leaf": uniform(0.02, 0.2),
+    #        "decisiontreeclassifier__max_depth": uniform(1, 20),
+    #    },
+    #    scoring="accuracy", # "neg_mean_absolute_error",
+    #    n_jobs=-1, # -1 means using all processors
+    #    cv=5,
+    #    verbose=10,
+    #    return_train_score=True,
+    #)
 
     print("-----------------")
     print("TRAINING...")
@@ -59,13 +73,17 @@ if __name__ == "__main__":
     search.fit(xtrain, ytrain)
     print("-----------------")
     print("MODEL CLASSES:", search.classes_)
-    print("ACCURACY (TRAINING):", search.score(xtrain, ytrain))
-    print("ACCURACY (VALIDATION):", search.score(xval, yval))
+    training_accy = search.score(xtrain, ytrain)
+    print("ACCURACY (TRAINING):", training_accy)
+    val_accy = search.score(xval, yval)
+    print("ACCURACY (VALIDATION):", val_accy)
     print("BEST PARAMS:")
     pprint(search.best_params_)
     print("BEST SCORE:", search.best_score_)
     with open(SEARCH_RESULTS_FILEPATH, "w") as f:
         f.write(json.dumps({
+            "accy_training": training_accy,
+            "accy_validation": val_accy,
             "best_score": search.best_score_,
             "best_params": search.best_params_
         }))
