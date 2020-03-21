@@ -6,7 +6,7 @@ from pprint import pprint
 import pandas
 from pandas_profiling import ProfileReport
 
-from app.importer import training_and_validation_df, training_and_validation_df_raw
+from app.importer import Importer
 
 REPORTS_DIR = os.path.join(os.path.dirname(__file__), "..", "reports")
 
@@ -14,13 +14,16 @@ TO_HTML = (os.getenv("TO_HTML", "False").title() == "True")
 
 if __name__ == "__main__":
 
+    importer = Importer()
+
     datasets = {
-        "raw": training_and_validation_df_raw(),
-        "processed": training_and_validation_df()
+        "raw": importer.training_df_raw,
+        "processed": importer.training_df
     }
+
     for k, df in datasets.items():
         print("------------")
-        print(f"DATASET: {k.upper()}")
+        print(f"TRAINING DATASET ({k.upper()})")
         print("------------")
 
         profile = ProfileReport(df, title=f"Passengers Training Data ({k.title()})", html={"style":{"full_width":True}})
