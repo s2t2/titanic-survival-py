@@ -41,10 +41,10 @@ if __name__ == "__main__":
         estimator=pipeline,
         param_grid={
             "simpleimputer__strategy": ["mean", "median"],
-            "decisiontreeclassifier__min_samples_leaf": (0.02, 0.2),
-            "decisiontreeclassifier__max_depth": (1, 20),
+            "decisiontreeclassifier__min_samples_leaf": (0.01, 0.02, 0.03, 0.05, 0.08, 0.12, 0.16, 0.2, 0.5),
+            #"decisiontreeclassifier__max_depth": (1, 20),
         },
-        scoring="accuracy", # "neg_mean_absolute_error",
+        scoring="accuracy", #"f1",
         n_jobs=-1, # -1 means using all processors
         cv=5,
         verbose=10,
