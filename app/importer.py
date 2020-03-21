@@ -1,6 +1,7 @@
 
 import os
 import pandas
+from pprint import pprint
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data")
 TRAINING_DATA_FILEPATH = os.path.join(DATA_DIR, "passengers_train.csv")
@@ -11,6 +12,8 @@ TRAINING_DATA_FILEPATH = os.path.join(DATA_DIR, "passengers_train.csv")
 
 def training_and_validation_df():
     df = pandas.read_csv(TRAINING_DATA_FILEPATH)
+
+    # renaming cols:
     COLUMNS_MAP = {
         "PassengerId": "passenger_id",
         "Survived": "survived",
@@ -26,17 +29,23 @@ def training_and_validation_df():
         "Embarked": "embarked_from_port"
     }
     df = df.rename(columns=COLUMNS_MAP)
+
     # overwriting vals:
     df["ticket_class"] = df["ticket_class"].transform(parse_class)
     df["embarked_from_port"] = df["embarked_from_port"].transform(parse_port)
+
     # engineering new cols:
     df["marital_status"] = df["full_name"].transform(parse_marital_status)
     df["salutation"] = df["full_name"].transform(parse_salutation)
+
+    # dropping cols:
+    df = df.drop(columns=["ticket_id", "cabin_id", "passenger_id", "full_name", "sib_spouse_count", "parent_child_count"])
 
     print("-------------------")
     print("TRAINING / VALIDATION DATA...")
     print("-------------------")
     print(df.head())
+    pprint(sorted(list(df.columns)))
     return df
 
 def parse_class(class_num):
@@ -54,7 +63,7 @@ def parse_port(port_abbrev):
         port_name = PORTS_MAP[port_abbrev]
     except KeyError as err:
         print("PORT PARSER ERR", err, "ORIGINAL VAL:", type(port_abbrev), port_abbrev)
-        port_name = None
+        port_name = None #port_abbrev # None
     return port_name
 
 def parse_marital_status(full_name):
@@ -89,6 +98,8 @@ def parse_salutation(full_name):
         sal = "MS"
     elif "Don." in full_name:
         sal = "DON"
+    elif "Jonkheer." in full_name:
+        sal = "LADY"
     else:
         print("SALUTATION PARSER ERROR", full_name, type(full_name))
         sal = None
