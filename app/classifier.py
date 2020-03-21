@@ -4,7 +4,7 @@ import os
 import json
 from pprint import pprint
 
-from pandas import Series
+from pandas import Series, DataFrame
 #import matplotlib.pyplot as plt
 import plotly.express as px
 
@@ -40,9 +40,12 @@ if __name__ == "__main__":
     print("-----------------")
 
     importer = Importer()
-    xtrain, ytrain = importer.xtrain, importer.ytrain
-    xval, yval = importer.xval, importer.yval
-    xtest, ytest = importer.xtest, importer.ytest
+    # leave in "passenger_id" until now so can merge on this later, but don't include in analysis / modeling:
+    xtrain = importer.xtrain.copy().drop(columns=["passenger_id"])
+    ytrain = importer.ytrain
+    xval = importer.xval.copy().drop(columns=["passenger_id"])
+    yval = importer.yval
+    xtest = importer.xtest.copy().drop(columns=["passenger_id"])
 
     print("-----------------")
     print("CONFIGURING SEARCH PARAMETERS...")
@@ -124,8 +127,8 @@ if __name__ == "__main__":
     print("GENERATING PREDICTIONS (TEST SET):")
     print(os.path.abspath(PREDICTIONS_FILEPATH))
     ytest_pred = search.predict(xtest)
-    print(ytest_pred) # todo: join with passenger_ids from xtest
-    #breakpoint()
+    ytest_pred_df = DataFrame({"PassengerId": importer.xtest["passenger_id"], "Survived": ytest_pred})
+    ytest_pred_df.to_csv(PREDICTIONS_FILEPATH, index=False)
 
     print("-----------------")
     print("GRAPHING FEATURE IMPORTANCES:")

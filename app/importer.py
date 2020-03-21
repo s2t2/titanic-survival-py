@@ -69,7 +69,7 @@ class Importer():
         df["salutation"] = df["full_name"].transform(cls.parse_salutation)
 
         # dropping cols:
-        df = df.drop(columns=["ticket_id", "cabin_id", "passenger_id", "full_name", "sib_spouse_count", "parent_child_count"])
+        df = df.drop(columns=["ticket_id", "cabin_id", "full_name", "sib_spouse_count", "parent_child_count"]) # "passenger_id"
         df = df.drop(columns=["salutation", "embarked_from_port"]) # temporary
 
         return df

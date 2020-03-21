@@ -44,6 +44,11 @@ python -m app.classifier
 
 Current Validation Accuracy: 87.1%
 
+Feature Importances:
+
+![](/reports/feature_importances.png)
+
+
 Decision Tree Logic:
 
-![](reports/decision_tree.png)
+![](/reports/decision_tree.png)
