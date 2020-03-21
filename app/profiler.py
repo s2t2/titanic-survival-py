@@ -7,8 +7,7 @@ import pandas
 from pandas_profiling import ProfileReport
 
 from app.importer import Importer
-
-REPORTS_DIR = os.path.join(os.path.dirname(__file__), "..", "reports")
+from app import REPORTS_DIR
 
 TO_HTML = (os.getenv("TO_HTML", "True").title() == "True")
 

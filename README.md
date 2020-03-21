@@ -21,3 +21,11 @@ pip install -r requirements.txt
 python -m app.importer
 python -m app.profiler
 ```
+
+## Results
+
+Current Validation Accuracy: 82% - 83%
+
+Decision Tree Logic:
+
+![](reports/decision_tree.png)
