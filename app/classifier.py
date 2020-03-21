@@ -23,7 +23,9 @@ if __name__ == "__main__":
     xtrain, ytrain, xval, yval = importer.training_and_validation_splits()
 
     # pipeline:
-    one_hot_encoder = OneHotEncoder(use_cat_names=True, cols=["gender", "embarked_from_port", "salutation"])
+    one_hot_encoder = OneHotEncoder(use_cat_names=True, cols=["gender",
+        #"embarked_from_port", "salutation"
+    ])
     ordinal_encoder = OrdinalEncoder(cols=["ticket_class"], mapping=[{"col": "ticket_class", "mapping": {"UPPER":3, "MIDDLE":2, "LOWER":1}}])
     imputer = SimpleImputer() # strategy="median"
     #scaler = StandardScaler()

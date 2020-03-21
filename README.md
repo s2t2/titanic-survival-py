@@ -1,4 +1,4 @@
-# Titanic Survival (Python)
+# Titanic Survival Predictions (Python)
 
 ![](https://media.nationalgeographic.org/assets/photos/000/273/27302.jpg)
 
@@ -36,7 +36,7 @@ python -m app.classifier
 
 ## Results
 
-Current Validation Accuracy: 82% - 83%
+Current Validation Accuracy: 86.5%
 
 Decision Tree Logic:
 
