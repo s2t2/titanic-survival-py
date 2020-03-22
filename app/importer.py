@@ -14,23 +14,21 @@ class Importer():
     target_col = "survived"
 
     def __init__(self):
-        # extracts raw data, allows for pre-transformation profiling:
-        self.trainval_df_raw = pandas.read_csv(TRAINING_AND_VALIDATION_DATA_FILEPATH).copy()
+        # process data used for testing and submitting:
         self.testing_df_raw = pandas.read_csv(TESTING_DATA_FILEPATH).copy()
+        self.xtest_passenger_ids = self.testing_df_raw["PassengerId"] # preserve now because this feature may be removed during processing
+        self.testing_df = self.process(self.testing_df_raw) # assumes processing doesn't change the number or order of rows, but it may remove or add columns and change the values thereof
+        self.xtest = self.testing_df # because the test set doesn't include the target column
 
-        # cleans the data (to some extent, because encoding, imputing, scaling, all done during model training):
+        # process data used for training and evaluation:
+        self.trainval_df_raw = pandas.read_csv(TRAINING_AND_VALIDATION_DATA_FILEPATH).copy()
         self.trainval_df = self.process(self.trainval_df_raw)
-        self.testing_df = self.process(self.testing_df_raw)
         self.training_df, self.validation_df = train_test_split(self.trainval_df, random_state=89,
             train_size=0.80, test_size=0.20,
             #stratify= self.training_df["survived"]
         )
-
-        # splits the data:
         self.xtrain, self.ytrain = self.split_xy(self.training_df)
         self.xval, self.yval = self.split_xy(self.validation_df)
-        self.xtest = self.testing_df # because there are no labels in the test set
-        self.ytest = None # because there are no labels in the test set
 
     @classmethod
     def split_xy(cls, passengers_df):
@@ -41,10 +39,11 @@ class Importer():
 
     @classmethod
     def process(cls, passengers_df):
+        """Adds columns and updates values. Does not remove columns or rows"""
         df = passengers_df.copy()
 
         # renaming cols:
-        COLUMNS_MAP = {
+        df = df.rename(columns={
             "PassengerId": "passenger_id",
             "Survived": "survived",
             "Pclass": "ticket_class",
@@ -57,8 +56,7 @@ class Importer():
             "Fare": "fare_usd",
             "Cabin": "cabin_id",
             "Embarked": "embarked_from_port"
-        }
-        df = df.rename(columns=COLUMNS_MAP)
+        })
 
         # overwriting vals:
         df["ticket_class"] = df["ticket_class"].transform(cls.parse_class)
@@ -67,10 +65,6 @@ class Importer():
         # engineering new cols:
         df["marital_status"] = df["full_name"].transform(cls.parse_marital_status)
         df["salutation"] = df["full_name"].transform(cls.parse_salutation)
-
-        # dropping cols:
-        df = df.drop(columns=["ticket_id", "cabin_id", "full_name", "sib_spouse_count", "parent_child_count"]) # "passenger_id"
-        df = df.drop(columns=["salutation", "embarked_from_port"]) # temporary
 
         return df
 
