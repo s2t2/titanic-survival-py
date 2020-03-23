@@ -3,39 +3,47 @@ import os
 import pandas
 from pprint import pprint
 
-# see: https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split # see: https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html
 
-DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data")
-TRAINING_DATA_FILEPATH = os.path.join(DATA_DIR, "passengers_train.csv")
+from app import DATA_DIR
+
+TRAINING_AND_VALIDATION_DATA_FILEPATH = os.path.join(DATA_DIR, "passengers_trainval.csv")
 TESTING_DATA_FILEPATH = os.path.join(DATA_DIR, "passengers_test.csv")
 
 class Importer():
-    def __init__(self):
-        self.training_df_raw = pandas.read_csv(TRAINING_DATA_FILEPATH).copy()
-        self.testing_df_raw = pandas.read_csv(TESTING_DATA_FILEPATH).copy()
-        self.training_df = self.process(self.training_df_raw)
-        self.testing_df = self.process(self.testing_df_raw)
+    target_col = "survived"
 
-    def training_and_validation_splits(self):
-        train, val = train_test_split(self.training_df, random_state=89, train_size=0.80, test_size=0.20,
-            #stratify= self.training_df
+    def __init__(self):
+        # process data used for testing and submitting:
+        self.testing_df_raw = pandas.read_csv(TESTING_DATA_FILEPATH).copy()
+        self.xtest_passenger_ids = self.testing_df_raw["PassengerId"] # preserve now because this feature may be removed during processing
+        self.testing_df = self.process(self.testing_df_raw) # assumes processing doesn't change the number or order of rows, but it may remove or add columns and change the values thereof
+        self.xtest = self.testing_df # because the test set doesn't include the target column
+
+        # process data used for training and evaluation:
+        self.trainval_df_raw = pandas.read_csv(TRAINING_AND_VALIDATION_DATA_FILEPATH).copy()
+        self.trainval_df = self.process(self.trainval_df_raw)
+        self.training_df, self.validation_df = train_test_split(self.trainval_df, random_state=89,
+            train_size=0.80, test_size=0.20,
+            #stratify= self.training_df["survived"]
         )
-        #print(type(train), len(train)) #> <class 'pandas.core.frame.DataFrame'> 712
-        #print(type(val), len(val)) #> <class 'pandas.core.frame.DataFrame'> 179
-        target_col = "survived"
-        xtrain = train.drop(columns=[target_col]) # use all other features except the target, inplace is False by default
-        ytrain = train[target_col]
-        xval = val.drop(columns=[target_col]) # use all other features except the target, inplace is False by default
-        yval = val[target_col]
-        return xtrain, ytrain, xval, yval
+        self.xtrain, self.ytrain = self.split_xy(self.training_df)
+        self.xval, self.yval = self.split_xy(self.validation_df)
+
+    @classmethod
+    def split_xy(cls, passengers_df):
+        df = passengers_df.copy()
+        features = df.drop(columns=[cls.target_col]) # use all other features except the target, inplace is False by default
+        labels = df[cls.target_col]
+        return features, labels # x, y
 
     @classmethod
     def process(cls, passengers_df):
+        """Adds columns and updates values. Does not / should not remove columns or rows."""
         df = passengers_df.copy()
 
         # renaming cols:
-        COLUMNS_MAP = {
+        df = df.rename(columns={
             "PassengerId": "passenger_id",
             "Survived": "survived",
             "Pclass": "ticket_class",
@@ -48,8 +56,7 @@ class Importer():
             "Fare": "fare_usd",
             "Cabin": "cabin_id",
             "Embarked": "embarked_from_port"
-        }
-        df = df.rename(columns=COLUMNS_MAP)
+        })
 
         # overwriting vals:
         df["ticket_class"] = df["ticket_class"].transform(cls.parse_class)
@@ -58,10 +65,6 @@ class Importer():
         # engineering new cols:
         df["marital_status"] = df["full_name"].transform(cls.parse_marital_status)
         df["salutation"] = df["full_name"].transform(cls.parse_salutation)
-
-        # dropping cols:
-        df = df.drop(columns=["ticket_id", "cabin_id", "passenger_id", "full_name", "sib_spouse_count", "parent_child_count"])
-        df = df.drop(columns=["salutation", "embarked_from_port"]) # temporary
 
         return df
 

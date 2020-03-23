@@ -3,3 +3,6 @@ pandas-profiling
 scikit-learn
 category_encoders
 graphviz
+plotly
+psutil # plotly: "Image generation requires the psutil package."
+orcha # plotly: "The orca executable is required to export figures as static images..."
