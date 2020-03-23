@@ -3,10 +3,10 @@ import os
 import pandas
 from pprint import pprint
 
-# see: https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split # see: https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html
 
-DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data")
+from app import DATA_DIR
+
 TRAINING_AND_VALIDATION_DATA_FILEPATH = os.path.join(DATA_DIR, "passengers_trainval.csv")
 TESTING_DATA_FILEPATH = os.path.join(DATA_DIR, "passengers_test.csv")
 
@@ -39,7 +39,7 @@ class Importer():
 
     @classmethod
     def process(cls, passengers_df):
-        """Adds columns and updates values. Does not remove columns or rows"""
+        """Adds columns and updates values. Does not / should not remove columns or rows."""
         df = passengers_df.copy()
 
         # renaming cols:
