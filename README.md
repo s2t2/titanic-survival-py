@@ -42,8 +42,6 @@ python -m app.classifier
 
 ## Results
 
-Current Validation Accuracy: 87.1%
-
 Feature Importances:
 
 ![](/reports/feature_importances.png)

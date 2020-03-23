@@ -13,7 +13,7 @@ import plotly.express as px
 from category_encoders import OneHotEncoder # see: https://contrib.scikit-learn.org/categorical-encoding/onehot.html
 from category_encoders import OrdinalEncoder # see: https://contrib.scikit-learn.org/categorical-encoding/ordinal.html
 from sklearn.impute import SimpleImputer # see: https://scikit-learn.org/stable/modules/generated/sklearn.impute.SimpleImputer.html
-from sklearn.preprocessing import StandardScaler # see: https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html
+#from sklearn.preprocessing import StandardScaler # see: https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html
 from sklearn.tree import DecisionTreeClassifier # see: https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html
 #from sklearn.ensemble import RandomForestClassifier
 
@@ -42,7 +42,8 @@ LATEST_MODEL_FILEPATH = os.path.join(MODELS_DIR, "latest_model.pkl")
 
 def filter_features(xdf):
     df = xdf.copy().drop(columns=["passenger_id", "full_name", "ticket_id", "cabin_id",
-        "sib_spouse_count", "parent_child_count", "salutation", "embarked_from_port"
+        "sib_spouse_count", "parent_child_count", "embarked_from_port",
+        # "salutation"
     ])
     return df
 
@@ -63,10 +64,10 @@ def train_model():
     print("CONFIGURING SEARCH PARAMETERS...")
 
     pipeline = Pipeline(steps=[
-        ("one_hot", OneHotEncoder(use_cat_names=True, cols=["gender"])),
+        ("one_hot", OneHotEncoder(use_cat_names=True, cols=["gender", "salutation"])),
         ("ordinal", OrdinalEncoder(cols=["ticket_class"], mapping=[{"col": "ticket_class", "mapping": {"UPPER":3, "MIDDLE":2, "LOWER":1}}])),
         ("imputer", SimpleImputer()),
-        ("scaler", StandardScaler()),
+        #("scaler", StandardScaler()),
         ("classifier", DecisionTreeClassifier(random_state=89))
     ])
     print(type(pipeline))
